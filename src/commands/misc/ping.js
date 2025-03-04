@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
+const config = ("../../config.json")
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -9,7 +10,7 @@ module.exports = {
         await interaction.reply('Pinging...');
         const latency = Date.now() - start;
         const embed = new EmbedBuilder()
-            .setColor('#0099ff')
+            .setColor(config.embedColors)
             .setTitle('Pong!')
             .setDescription(`Returned Successfully\nBot Latency: ${latency}ms\nAPI Latency: ${interaction.client.ws.ping}ms`);
         await interaction.followUp({ embeds: [embed] });
