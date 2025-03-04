@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, EmbedBuilder } = import("discord.js"); // async is a stinky and made me use import require on top all im saying
+/*const { SlashCommandBuilder, EmbedBuilder } = import("discord.js"); // async is a stinky and made me use import require on top all im saying
 const config = ("../../config.toml")
 
 module.exports = {
@@ -16,3 +16,4 @@ module.exports = {
         await interaction.followUp({ embeds: [embed] });
     }
 };
+*/
