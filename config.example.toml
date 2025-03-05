@@ -1,3 +1,14 @@
 [discord]
 client_id = ""
 client_token = ""
+
+[database]
+client = "mysql2"
+host = ""
+port = "3306"
+user = ""
+password = ""
+schema = ""
+
+[sentry]
+dsn = ""
