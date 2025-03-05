@@ -1,13 +1,15 @@
 {
   "name": "kog-bot-tomfoolery",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Discord utility for the Kleiner Oil Group.",
   "main": "build/src/index.js",
   "type": "module",
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc -w",
-    "start": "node ."
+    "start:prod": "node .",
+    "start:dev": "node . --debug",
+    "start:ci": "node . --ci"
   },
   "keywords": [],
   "author": "Asynchronite & Sheepboi546",
