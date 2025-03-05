@@ -42,5 +42,7 @@ jobs:
           cache: 'pnpm'
       - name: Install dependencies
         run: pnpm install
+      - name: Simulate environment
+        run: cp config.example.toml config.toml
       - name: Run tests
         run: pnpm run start:ci
