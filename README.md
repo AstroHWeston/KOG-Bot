@@ -8,3 +8,15 @@ KOG bot operates under discord.js and uses (/) commands in the KOG server only.
 
 ## License
 This project is licensed under the terms of the "LICENSE" file in the repository.
+
+## Credits
+
+(Subject to change)
+
+Asynchronite: Coding Handlers and backend of the general bot.
+Sheepboi546: Commands.
+
+Both are helping each other.
+
+Thank you for AsteroidPeak1 for approving this project.
+
