@@ -1,45 +1,68 @@
+/* import { config } from "../../config.toml";
+import { SlashCommandBuilder, EmbedBuilder } from "discord.js";
+import mysql from "mysql"; 
 
-/*import {config} from "../../config.toml"
-import {SlashCommandBuilder, EmbedBuilder} from "discord.js"
 
+const connection = mysql.createConnection({
+    credientials to be added soon
+});
 
 module.exports = {
     data: new SlashCommandBuilder()
-       .setName("mydata")
-       .setDescription("Returns data on yourself from DB."),
+        .setName("mydata")
+        .setDescription("Returns data on yourself from DB."),
 
     async execute(interaction) {
         try {
             const user = interaction.user;
-            const userId = interaction.user.id; // needed for DB methinks
+            const userId = interaction.user.id; // Needed for DB
 
-            if ("") { // if there is datta in the user found in DB (attended an event and logged)
-                const embed = new EmbedBuilder()
-                 .setColor(config.EmbedColor)
-                 .setTitle(`Information Retrieved on ${user}`)
-                 .addFields(
-                    { name: "Events Attended", value: "DB Stuff Here" },
-                    { name: "Events Hosted", value: "Events Hosted" },
-                    // add a field for squads? (are they gonna last though?)
-                  )
-                await interaction.reply({ embed: embed})
-            }
-            else { // if theres no information on the user (they havent attended an event and not been logged)
-                const embedFail = new EmbedBuilder()
-                 .setColor(config.EmbedColorFail)
-                 .setTitle("No Data Found")
-                 .setDescription("You need to be logged for an event before you can retrieve your data.")
-                 await interaction.reply({ embed: embedFail})
-            } 
+            // Query the DB to fetch data related to the user
+            connection.query('SELECT * FROM KOGDB WHERE userid = ?', [userId], async (err, results) => {
+                if (err) {
+                    console.error(err);
+                    const embedError = new EmbedBuilder()
+                        .setColor(config.EmbedColorError)
+                        .setTitle("Database Error")
+                        .setDescription("An error occurred while trying to retrieve your data.");
+                    await interaction.reply({ embeds: [embedError] });
+                    return;
+                }
+
+                if (results.length > 0) {
+
+                    retrieve information here (later)
+
+                    const embed = new EmbedBuilder()
+                        .setColor(config.EmbedColor)
+                        .setTitle(`Information Retrieved on ${user.username}`)
+                        .addFields(
+                            { name: "Events Attended", value: eventsAttended },
+                            { name: "Events Hosted", value: eventsHosted }
+                        );
+
+                    await interaction.reply({ embeds: [embed] });
+
+                } else {
+                    no data found
+                    const embedFail = new EmbedBuilder()
+                        .setColor(config.EmbedColorFail)
+                        .setTitle("No Data Found")
+                        .setDescription("You need to be logged for an event before you can retrieve your data.");
+
+                    await interaction.reply({ embeds: [embedFail] });
+                }
+            });
+
         } catch (error) {
             console.error(error);
             const embedError = new EmbedBuilder()
-             .setColor(config.EmbedColorError)
-             .setTitle("Error")
-             .setDescription("An error occurred while trying to retrieve your data.")
-             await interaction.reply({ embed: embedError})
+                .setColor(config.EmbedColorError)
+                .setTitle("Error")
+                .setDescription("An error occurred while trying to retrieve your data.");
+            await interaction.reply({ embeds: [embedError] });
         }
     }
-}
+};
 
 */
