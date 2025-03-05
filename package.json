@@ -9,7 +9,7 @@
     "build:watch": "tsc -w",
     "start:prod": "node .",
     "start:dev": "node . --debug",
-    "start:ci": "node . --ci"
+    "start:ci": "pnpm run build && echo Successfully built! && node . --ci"
   },
   "keywords": [],
   "author": "Asynchronite & Sheepboi546",
