@@ -6,11 +6,13 @@ export default class ReadyEvent implements GatewayEvent {
     once: boolean = true;
 
     async code (kogBot: KOGBot, client: Client) {
+        const debug = kogBot.debug;
+
         await client.user?.setPresence({
-            status: "idle",
+            status: debug ? 'dnd' : 'online',
             activities: [{
-                name: "with your mom",
-                type: ActivityType.Playing
+                name: debug ? 'debug mode ⚠️' : 'with Knex.',
+                type: debug ? ActivityType.Competing : ActivityType.Playing
             }]
         })
     }

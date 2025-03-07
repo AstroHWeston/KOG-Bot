@@ -4,6 +4,11 @@ import knex, { Knex } from "knex";
 import toml from 'toml';
 import * as Sentry from '@sentry/node';
 import { nodeProfilingIntegration } from "@sentry/profiling-node";
+import { join } from "path";
+import url from "url";
+import { readdirSync } from "fs";
+
+const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
 class DBot extends Client {
     kogBot: KOGBot;
@@ -22,17 +27,50 @@ class DBot extends Client {
         this.REST.setToken(this.kogBot.environment.discord.client_token);
 
         if (!kogBot.ci_workflow) {
+            this.gatewayEvents.listen().then(() => console.log("Listening to events."));
             this.login(this.kogBot.environment.discord.client_token);
+        }
+    }
 
-            this.on('ready', () => {
-                console.log(`Logged in as ${this.user?.tag}`);
-            });
+    gatewayEvents: EventsClass = {
+        functions: [],
 
-            this.on('messageCreate', (message: Message) => {
-                if (message.content === 'hi') {
-                    message.reply('hi');
+        parse: async () => {
+            const discordEvents: GatewayEvent[] = [];
+            const eventsPath = join(__dirname, 'events');
+            const eventFiles = readdirSync(eventsPath).filter(file => file.endsWith('.js'));
+
+            for (const file of eventFiles) {
+                const eventPath = join(eventsPath, file);
+                const importedEvent = (await import(`file://${eventPath}`)).default;
+
+                const theEvent = new importedEvent();
+
+                const eventName = file.replace(/\.[^/.]+$/, "");
+                const eventCode = theEvent.code;
+                const eventOnce: boolean = theEvent.once;
+
+                discordEvents.push({
+                    name: eventName,
+                    code: eventCode.bind(null, this.kogBot),
+                    once: eventOnce
+                });
+            }
+
+            return discordEvents;
+        },
+
+        listen: async () => {
+            const events: GatewayEvent[] = await this.gatewayEvents.parse();
+            this.gatewayEvents.functions = events;
+
+            for (const event of this.gatewayEvents.functions) {
+                if (event.once) {
+                    this.once(event.name, event.code);
+                } else {
+                    this.on(event.name, event.code);
                 }
-            });
+            }
         }
     }
 }
