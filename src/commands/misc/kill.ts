@@ -15,7 +15,7 @@ module.exports = {
 
     const user = interaction.getUser();
         const embed = new EmbedBuilder()
-            .setColor(config.embedColors)
+            .setColor("#9033FF")
             .setTitle('Killed')
             .setDescription(`I have killed the stinky of <@{user.id}>`);
         await interaction.reply({ embeds: [embed] });

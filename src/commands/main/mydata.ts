@@ -17,12 +17,12 @@ module.exports = {
             const user = interaction.user;
             const userId = interaction.user.id; // Needed for DB
 
-            // Query the DB to fetch data related to the user
+            
             connection.query('SELECT * FROM KOGDB WHERE userid = ?', [userId], async (err, results) => {
                 if (err) {
                     console.error(err);
                     const embedError = new EmbedBuilder()
-                        .setColor(config.EmbedColorError)
+                        .setColor("#E73A3A")
                         .setTitle("Database Error")
                         .setDescription("An error occurred while trying to retrieve your data.");
                     await interaction.reply({ embeds: [embedError] });
@@ -34,7 +34,7 @@ module.exports = {
                     retrieve information here (later)
 
                     const embed = new EmbedBuilder()
-                        .setColor(config.EmbedColor)
+                        .setColor("#9033FF")
                         .setTitle(`Information Retrieved on ${user.username}`)
                         .addFields(
                             { name: "Events Attended", value: eventsAttended },
@@ -46,7 +46,7 @@ module.exports = {
                 } else {
                     no data found
                     const embedFail = new EmbedBuilder()
-                        .setColor(config.EmbedColorFail)
+                        .setColor("#E73A3A")
                         .setTitle("No Data Found")
                         .setDescription("You need to be logged for an event before you can retrieve your data.");
 

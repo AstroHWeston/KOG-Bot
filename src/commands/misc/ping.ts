@@ -10,7 +10,7 @@ module.exports = {
         await interaction.reply('Pinging...');
         const latency = Date.now() - start;
         const embed = new EmbedBuilder()
-            .setColor(config.embedColors)
+            .setColor("#9033FF")
             .setTitle('Pong!')
             .setDescription(`Returned Successfully\nBot Latency: ${latency}ms\nAPI Latency: ${interaction.client.ws.ping}ms`);
         await interaction.followUp({ embeds: [embed] });
