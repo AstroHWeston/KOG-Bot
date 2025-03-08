@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, EmbedBuilder } from "discord.js";
+/*import { SlashCommandBuilder, EmbedBuilder } from "discord.js";
 import mysql from "mysql"; 
 const allowedroleID = "" // do this later when I have perms
 const logchannel = ""
@@ -103,3 +103,4 @@ module.exports = {
             
         }
     }
+*/
