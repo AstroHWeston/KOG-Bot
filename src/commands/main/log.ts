@@ -43,7 +43,7 @@ class LogEventCommand implements SlashCommand {
             const logStart = new EmbedBuilder()
                 .setColor('#9033FF')
                 .setTitle('Logging')
-                .setDescription('To log an event, please follow the format:\n\n<@user1>,<@user2>,<@user3>...\n\nNames must be separated by commas and must be mentions.')
+                .setDescription('To log an event, please follow the format:\n\n<@1138235120424325160>,<@573540579682811906>,<@1344176447551574078>,<@110877167897853952>,<@1125601338768756756>...\n\nNames must be separated by commas and must be mentions.')
                 .setTimestamp();
 
             await interaction.reply({ embeds: [logStart], ephemeral: true });
