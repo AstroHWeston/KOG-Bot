@@ -1,106 +1,159 @@
-/*import { SlashCommandBuilder, EmbedBuilder } from "discord.js";
-import mysql from "mysql"; 
-const allowedroleID = "" // do this later when I have perms
-const logchannel = ""
+import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from "discord.js";
+import mysql from "mysql";
+import { KOGBot } from "index.ts";
+import { SlashCommand } from "main.d.ts"; // 
+
+const allowedroleID = ""; // Set this later when I have perms
+const logchannel = ""; // log channel
 const connection = mysql.createConnection({
-    // credientials to be added soon
+    // goes here
 });
 
-module.exports = {
-    data: new SlashCommandBuilder()
-        .setName("log")
-        .setDescription("Logs offical events for KOG."),
+class LogEventCommand implements SlashCommand {
+    name = "log";
+    description = "Logs official events for KOG.";
+    subcommands = [];
+    parameters = [];
+    dev = true; 
+    kogBot: KOGBot;
 
-    async execute(interaction) {
+    constructor(kogBot: KOGBot) {
+        this.kogBot = kogBot;
+    }
+
+    async execute(interaction: ChatInputCommandInteraction): Promise<void> {
         try {
-            if (!interaction.member.role.cache.has(allowedroleID)) {
+            // Check for required role
+            if (!interaction.member?.roles.cache.has(allowedroleID)) {
                 const noperms = new EmbedBuilder()
-                .setColor("#E73A3A")
-                .setTitle("Error")
-                .setDescription("You don't have the required role to use this command.")
-                .setTimestamp()
+                    .setColor("#E73A3A")
+                    .setTitle("Error")
+                    .setDescription("You don't have the required role to use this command.")
+                    .setTimestamp();
 
-                await interaction.reply({ embeds: [noperms], ephemeral: true})
-            
+                await interaction.reply({ embeds: [noperms], ephemeral: true });
+                return;
             }
 
+            
             const logStart = new EmbedBuilder()
-            .setColor("#9033FF")
-            .setTitle("Logging")
-            .setDescription("To log an event, please follow the following format:\n\n<@1344176447551574078>,<@1138235120424325160>,<@110877167897853952>,<@573540579682811906> and so on.\n\nNames must be seperated by commas and must be mentions. Otherwise you'll be asked to re do it.\n\nYou have 2 minutes to submit attendees, before this times out.\n\nTo cancel, please type **cancel**.")
-            .setTimestamp()
+                .setColor("#9033FF")
+                .setTitle("Logging")
+                .setDescription("To log an event, please follow the format:\n\n<@user1>,<@user2>,<@user3>...\n\nNames must be separated by commas and must be mentions.") // put peoples names here
+                .setTimestamp();
 
-            await interaction.reply({ embeds: [logStart], ephemeral: true})
+            await interaction.reply({ embeds: [logStart], ephemeral: true });
 
-            const filter = (message) => message.author.id === interaction.user.id && message.channel.id === interaction.channel.id;
+            const filter = (message: any) => message.author.id === interaction.user.id && message.channel.id === interaction.channel.id;
             const input = await interaction.channel.awaitMessages({ filter, max: 1, time: 60000, errors: ['time'] });
-            const response = userInput.first().content;
-            
-            const mentionRegexthing = /^<@\d+>(?:,\s?<@\d+>)*$/;
-            
-            if (!mentionRegexthing.test(response)) {
-                return interaction.followUp("Invalid format. Please make sure the names are separated by commas and each name is a mention. Run the command again and use the correct format.");
-              }
+            const response = input.first()?.content;
 
-            if (error instanceof Error && error.message === 'time') {
-                return interaction.reply(`<@${interaction.user.id}> you took too long to follow up, please try again.`);
+            const mentionRegexthing = /^<@\d+>(?:,\s?<@\d+>)*$/;
+
+            if (!mentionRegexthing.test(response!)) {
+                return interaction.followUp("Invalid format. Please make sure the names are separated by commas and each name is a mention. Run the command again with the correct format.");
             }
-            if (response.toLowerCase() === 'cancel') {
+
+            if (response?.toLowerCase() === 'cancel') {
                 return interaction.reply(`<@${interaction.user.id}> canceled the event log.`);
             }
-            
-            const mentions = response.split(',').map(id => id.trim().replace('<@', '').replace('>', ''));
-            const userIds = []
+
+            if (response instanceof Error && response.message === 'time') {
+                return interaction.reply(`<@${interaction.user.id}> you took too long to follow up, please try again.`);
+            }
+
+            const mentions = response.split(',').map((id: string) => id.trim().replace('<@', '').replace('>', ''));
+            const userIds: string[] = [];
 
             for (const mention of mentions) {
-                const userId = mention.slice(2, -1)
-                if (userId)
-                    userIds.push(userId)
+                const userId = mention.slice(2, -1);
+                if (userId) userIds.push(userId);
             }
 
             if (userIds.length === 0) {
                 return interaction.reply("No users mentioned. Please try again.");
             }
+
+            // Log the event in the log channel
             const timestamp = Math.floor(Date.now() / 1000);
             const logEmbed = new EmbedBuilder()
-            .setColor("#9033FF")
-            .setTitle("Log Event")
-            .setDescription(`A new event was logged.\n\nHost: ${interaction.user.id}\n\nTime: <t:${timestamp}:F>\n\nAttendees: ${mentions.map(id => `<@${id}>`).join(', ')}\n\nSquadron Rally: False`) // set to false until we integrate with squads??
-            .setTimestamp()
+                .setColor("#9033FF")
+                .setTitle("Log Event")
+                .setDescription(`A new event was logged.\n\nHost: ${interaction.user.id}\n\nTime: <t:${timestamp}:F>\n\nAttendees: ${mentions.map(id => `<@${id}>`).join(', ')}\n\nSquadron Rally: False`)
+                .setTimestamp();
 
-            await logchannel.send({embeds: [logStart], ephemeral: false})
-
-            // database stuff will go here: example
-
-            if ("We have updated the DB") {
-                const DB = new EmbedBuilder()
-            .setColor("#9033FF")
-            .setTitle("Log Event")
-            .setDescription(`Database updated, event has been logged succesfully.`)
-            .setTimestamp()
-
-            await logchannel.send({embeds: [DB], ephemeral: false})
+            const logChannel = await interaction.client.channels.fetch(logchannel);
+            if (logChannel) {
+                await logChannel.send({ embeds: [logEmbed] });
             }
-            else {
+
+            
+            for (const userId of userIds) {
+                connection.query(// 'SELECT COUNT(*) AS eventCount FROM events WHERE userId = ?' this is not final (async will do db)
+                    , [userId], async (err, results) => {
+                    if (err) {
+                        console.error(err);
+                        return interaction.followUp("There was an error querying the database.");
+                    }
+
+                    const eventCount = results[0]?.eventCount || 0;
+
+                  
+                    
+
+                    if (eventCount === 5) {
+                        const promotionEmbed = new EmbedBuilder()
+                            .setColor("#FFBF00")
+                            .setTitle("Promotion Needed")
+                            .setDescription(`<@${userId}> has reached 5 events! This user needs promoting.`)
+                            .setTimestamp();
+                    } else if (eventCount >= 10) {
+                        const promotionEmbed = new EmbedBuilder()
+                            .setColor("#FFD700")
+                            .setTitle("Promotion Needed")
+                            .setDescription(`<@${userId}> has reached 10 events! Consider promoting them.`)
+                            .setTimestamp();
+                    }
+
+                    /
+                    if (promotionEmbed) {
+                        await logChannel.send({ embeds: [promotionEmbed] });
+                    }
+                });
+            }
+
+            // database updating goes here
+           
+
+            if () { // database logging
+                const dbEmbed = new EmbedBuilder()
+                    .setColor("#9033FF")
+                    .setTitle("Log Event")
+                    .setDescription("Database updated, event has been logged successfully.")
+                    .setTimestamp();
+
+                await logChannel.send({ embeds: [dbEmbed] });
+            } else {
                 const errorEmbed = new EmbedBuilder()
-                .setColor("#E73A3A")
-                .setTitle("Error")
-                .setDescription("An error occurred while updating the DB. The database has not been updated and the log has failed\nContact <@1344176447551574078> or <@1138235120424325160>")
-                
-                await logchannel.send({embeds: [errorEmbed], ephemeral: false})
-            }
+                    .setColor("#E73A3A")
+                    .setTitle("Error")
+                    .setDescription("An error occurred while updating the DB. The database has not been updated, and the log has failed.\nContact the admin for support.")
+                    .setTimestamp();
 
+                await logChannel.send({ embeds: [errorEmbed] });
+            }
 
         } catch (error) {
-            console.log(error)
+            console.log(error);
             const errorEmbed = new EmbedBuilder()
                 .setColor("#E73A3A")
                 .setTitle("Error")
                 .setDescription("An error occurred while executing this command.")
-                
-                await interaction.reply({embeds: [errorEmbed], ephemeral: true})
-            }
-            
+                .setTimestamp();
+
+            await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
         }
     }
-*/
+}
+
+export default LogEventCommand;

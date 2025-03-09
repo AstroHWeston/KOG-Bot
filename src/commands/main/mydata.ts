@@ -1,23 +1,29 @@
-/* import { config } from "../../config.toml";
-import { SlashCommandBuilder, EmbedBuilder } from "discord.js";
-import mysql from "mysql"; 
-
+import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from "discord.js";
+import mysql from "mysql";
+import { KOGBot } from "index.ts";
+import { SlashCommand } from "main.d.ts";  
 
 const connection = mysql.createConnection({
-    credientials to be added soon
+    // cool connections goes here
 });
 
-module.exports = {
-    data: new SlashCommandBuilder()
-        .setName("mydata")
-        .setDescription("Returns data on yourself from DB."),
+class GetDataCommand implements SlashCommand {
+    name = "mydata";
+    description = "Returns data on yourself from DB.";
+    subcommands = [];
+    parameters = [];
+    dev = true; // dev for now 
+    kogBot: KOGBot;
 
-    async execute(interaction) {
+    constructor(kogBot: KOGBot) {
+        this.kogBot = kogBot;
+    }
+
+    async execute(interaction: ChatInputCommandInteraction): Promise<void> {
         try {
             const user = interaction.user;
             const userId = interaction.user.id; // Needed for DB
 
-            
             connection.query('SELECT * FROM KOGDB WHERE userid = ?', [userId], async (err, results) => {
                 if (err) {
                     console.error(err);
@@ -30,21 +36,20 @@ module.exports = {
                 }
 
                 if (results.length > 0) {
-
-                    retrieve information here (later)
+                  
+                    const { eventsAttended, eventsHosted } = results[0];
 
                     const embed = new EmbedBuilder()
                         .setColor("#9033FF")
                         .setTitle(`Information Retrieved on ${user.username}`)
                         .addFields(
-                            { name: "Events Attended", value: eventsAttended },
-                            { name: "Events Hosted", value: eventsHosted }
+                            { name: "Events Attended", value: eventsAttended.toString() },
+                            { name: "Events Hosted", value: eventsHosted.toString() }
                         );
 
                     await interaction.reply({ embeds: [embed] });
 
                 } else {
-                    no data found
                     const embedFail = new EmbedBuilder()
                         .setColor("#E73A3A")
                         .setTitle("No Data Found")
@@ -57,12 +62,12 @@ module.exports = {
         } catch (error) {
             console.error(error);
             const embedError = new EmbedBuilder()
-                .setColor(config.EmbedColorError)
+                .setColor("#E73A3A")
                 .setTitle("Error")
                 .setDescription("An error occurred while trying to retrieve your data.");
             await interaction.reply({ embeds: [embedError] });
         }
     }
-};
+}
 
-*/
+export default GetDataCommand;
