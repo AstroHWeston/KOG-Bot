@@ -7,6 +7,7 @@ import { nodeProfilingIntegration } from "@sentry/profiling-node";
 import { join } from "path";
 import url from "url";
 import { readdirSync } from "fs";
+import type { GatewayEvent, EventsClass } from "./types/main.d.ts";
 
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
