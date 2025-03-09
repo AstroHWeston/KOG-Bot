@@ -1,6 +1,6 @@
-import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from "discord.js";
+/* import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from "discord.js";
 import { KOGBot } from "index.ts"; 
-import { SlashCommand } from "main.d.ts"; =
+import { SlashCommand } from "main.d.ts"; 
 
 class PingCommand implements SlashCommand {
     name = 'ping';
@@ -41,3 +41,5 @@ class PingCommand implements SlashCommand {
 }
 
 export default PingCommand;
+
+*/

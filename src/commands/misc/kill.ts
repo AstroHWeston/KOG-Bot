@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction, SlashCommand } from "discord.js";
+/* import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction, SlashCommand } from "discord.js";
 import { KOGBot } from "index.ts"; 
 
 class KillCommand implements SlashCommand {
@@ -42,3 +42,5 @@ class KillCommand implements SlashCommand {
 }
 
 export default KillCommand;
+
+*/

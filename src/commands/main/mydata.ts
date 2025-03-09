@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from "discord.js";
+/* import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from "discord.js";
 import mysql from "mysql";
 import { KOGBot } from "index.ts";
 import { SlashCommand } from "main.d.ts";  
@@ -71,3 +71,5 @@ class GetDataCommand implements SlashCommand {
 }
 
 export default GetDataCommand;
+
+*/
