@@ -2,9 +2,14 @@
 import mysql from "mysql";
 import { KOGBot } from "index.ts";
 import { SlashCommand } from "main.d.ts";  
+import config from "../../config"
 
 const connection = mysql.createConnection({
-    // cool connections goes here
+    host: config.database.host,
+    port: config.database.port,
+    user: config.database.user,
+    password: config.database.password,
+    database: config.database.schema
 });
 
 class GetDataCommand implements SlashCommand {

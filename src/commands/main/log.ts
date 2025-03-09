@@ -1,17 +1,22 @@
-/* import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from "discord.js";
-import mysql from "mysql";
-import { KOGBot } from "index.ts";
-import { SlashCommand } from "main.d.ts";
+/* import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from 'discord.js';
+import mysql from 'mysql';
+import { KOGBot } from 'index.ts';
+import { SlashCommand } from 'main.d.ts';
+import config from '../../config';
 
-const allowedroleID = ""; // Set this later when I have perms
-const logchannel = ""; // log channel
+const allowedroleID = config.discord.mr_role; // Set this later when I have perms
+const logchannel = config.discord.log_channel; // log channel
 const connection = mysql.createConnection({
-    // database connection details
+    host: config.database.host,
+    port: config.database.port,
+    user: config.database.user,
+    password: config.database.password,
+    database: config.database.schema,
 });
 
 class LogEventCommand implements SlashCommand {
-    name = "log";
-    description = "Logs official events for KOG.";
+    name = 'log';
+    description = 'Logs official events for KOG.';
     subcommands = [];
     parameters = [];
     dev = true;
@@ -26,8 +31,8 @@ class LogEventCommand implements SlashCommand {
             // Check for required role
             if (!interaction.member?.roles.cache.has(allowedroleID)) {
                 const noperms = new EmbedBuilder()
-                    .setColor("#E73A3A")
-                    .setTitle("Error")
+                    .setColor('#E73A3A')
+                    .setTitle('Error')
                     .setDescription("You don't have the required role to use this command.")
                     .setTimestamp();
 
@@ -36,9 +41,9 @@ class LogEventCommand implements SlashCommand {
             }
 
             const logStart = new EmbedBuilder()
-                .setColor("#9033FF")
-                .setTitle("Logging")
-                .setDescription("To log an event, please follow the format:\n\n<@user1>,<@user2>,<@user3>...\n\nNames must be separated by commas and must be mentions.")
+                .setColor('#9033FF')
+                .setTitle('Logging')
+                .setDescription('To log an event, please follow the format:\n\n<@user1>,<@user2>,<@user3>...\n\nNames must be separated by commas and must be mentions.')
                 .setTimestamp();
 
             await interaction.reply({ embeds: [logStart], ephemeral: true });
@@ -50,7 +55,7 @@ class LogEventCommand implements SlashCommand {
             const mentionRegexthing = /^<@\d+>(?:,\s?<@\d+>)*$/;
 
             if (!mentionRegexthing.test(response!)) {
-                await interaction.followUp("Invalid format. Please make sure the names are separated by commas and each name is a mention. Run the command again with the correct format.");
+                await interaction.followUp('Invalid format. Please make sure the names are separated by commas and each name is a mention. Run the command again with the correct format.');
                 return;
             }
 
@@ -73,16 +78,20 @@ class LogEventCommand implements SlashCommand {
             }
 
             if (userIds.length === 0) {
-                await interaction.reply("No users mentioned. Please try again.");
+                await interaction.reply('No users mentioned. Please try again.');
                 return;
             }
+
+            
+            const host = interaction.user.id;
+            userIds.push(host);
 
             // Log the event in the log channel
             const timestamp = Math.floor(Date.now() / 1000);
             const logEmbed = new EmbedBuilder()
-                .setColor("#9033FF")
-                .setTitle("Log Event")
-                .setDescription(`A new event was logged.\n\nHost: ${interaction.user.id}\n\nTime: <t:${timestamp}:F>\n\nAttendees: ${mentions.map(id => `<@${id}>`).join(', ')}\n\nSquadron Rally: False`)
+                .setColor('#9033FF')
+                .setTitle('Event log')
+                .setDescription(`A new event was logged.\n\nHost: <@${host}>\n\nTime: <t:${timestamp}:F>\n\nAttendees: ${mentions.map(id => `<@${id}>`).join(', ')}\n\nSquadron Rally: False`)
                 .setTimestamp();
 
             const logChannel = await interaction.client.channels.fetch(logchannel);
@@ -91,72 +100,71 @@ class LogEventCommand implements SlashCommand {
             }
 
             for (const userId of userIds) {
-                connection.query(
-                    'SELECT COUNT(*) AS eventCount FROM events WHERE userId = ?',
-                    [userId],
-                    async (err, results) => {
-                        if (err) {
-                            console.error(err);
-                            await interaction.followUp("There was an error querying the database.");
-                            return;
+                connection.query('SELECT * FROM KOGDB WHERE userId = ?', [userId], async (err, results) => {
+                    if (err) {
+                        console.error(err);
+                        await interaction.followUp('There was an error querying the database.');
+                        return;
+                    }
+
+                    if (results.length > 0) {
+                       
+                        if (userId === host) {
+                            connection.query('UPDATE KOGDB SET eventsAttended = eventsAttended + 1, eventsHosted = eventsHosted + 1 WHERE userId = ?', [userId], async (updateErr) => {
+                                if (updateErr) {
+                                    console.error(updateErr);
+                                    await interaction.followUp('There was an error updating the database.');
+                                    return;
+                                }
+                            });
+                        } else {
+                            connection.query('UPDATE KOGDB SET eventsAttended = eventsAttended + 1 WHERE userId = ?', [userId], async (updateErr) => {
+                                if (updateErr) {
+                                    console.error(updateErr);
+                                    await interaction.followUp('There was an error updating the database.');
+                                    return;
+                                }
+                            });
                         }
-
-                        const eventCount = results[0]?.eventCount || 0;
-                        let promotionEmbed: any;
-
-                        if (eventCount === 5) {
-                            promotionEmbed = new EmbedBuilder()
-                                .setColor("#FFBF00")
-                                .setTitle("Promotion Needed")
-                                .setDescription(`<@${userId}> has reached 5 events! This user needs promoting.`)
-                                .setTimestamp();
-                        } else if (eventCount >= 10) {
-                            promotionEmbed = new EmbedBuilder()
-                                .setColor("#FFD700")
-                                .setTitle("Promotion Needed")
-                                .setDescription(`<@${userId}> has reached 10 events! Consider promoting them.`)
-                                .setTimestamp();
-                        }
-
-                        if (promotionEmbed && logChannel?.isText()) {
-                            await logChannel.send({ embeds: [promotionEmbed] });
+                    } else {
+                        
+                        if (userId === host) {
+                            connection.query('INSERT INTO KOGDB (userId, eventsAttended, eventsHosted) VALUES (?, 1, 1)', [userId], async (insertErr) => {
+                                if (insertErr) {
+                                    console.error(insertErr);
+                                    await interaction.followUp('There was an error updating the database.');
+                                    return;
+                                }
+                            });
+                        } else {
+                            connection.query('INSERT INTO KOGDB (userId, eventsAttended, eventsHosted) VALUES (?, 1, 0)', [userId], async (insertErr) => {
+                                if (insertErr) {
+                                    console.error(insertErr);
+                                    await interaction.followUp('There was an error updating the database.');
+                                    return;
+                                }
+                            });
                         }
                     }
-                );
+                });
             }
 
-            // database updating goes here
+            const dbEmbed = new EmbedBuilder()
+                .setColor('#9033FF')
+                .setTitle('Log Event')
+                .setDescription('Database updated, event has been logged successfully.')
+                .setTimestamp();
 
-            const isDatabaseUpdated = true; // "oh its updated"
-
-            if (isDatabaseUpdated) {
-                const dbEmbed = new EmbedBuilder()
-                    .setColor("#9033FF")
-                    .setTitle("Log Event")
-                    .setDescription("Database updated, event has been logged successfully.")
-                    .setTimestamp();
-
-                if (logChannel) {
-                    await logChannel.send({ embeds: [dbEmbed] });
-                }
-            } else {
-                const errorEmbed = new EmbedBuilder()
-                    .setColor("#E73A3A")
-                    .setTitle("Error")
-                    .setDescription("An error occurred while updating the DB. The database has not been updated, and the log has failed.\nContact the admin for support.")
-                    .setTimestamp();
-
-                if (logChannel) {
-                    await logChannel.send({ embeds: [errorEmbed] });
-                }
+            if (logChannel) {
+                await logChannel.send({ embeds: [dbEmbed] });
             }
 
         } catch (error) {
             console.log(error);
             const errorEmbed = new EmbedBuilder()
-                .setColor("#E73A3A")
-                .setTitle("Error")
-                .setDescription("An error occurred while executing this command.")
+                .setColor('#E73A3A')
+                .setTitle('Error')
+                .setDescription('An error occurred while executing this command.')
                 .setTimestamp();
 
             await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
@@ -167,4 +175,3 @@ class LogEventCommand implements SlashCommand {
 export default LogEventCommand;
 
 */
-
