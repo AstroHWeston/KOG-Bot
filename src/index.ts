@@ -127,5 +127,3 @@ class KOGBot_Client {
 const KOGBot = new KOGBot_Client();
 export default KOGBot;
 export type KOGBot = typeof KOGBot;
-
-// this is temporary so STUPID SHEEP CAN HAVE FUN
