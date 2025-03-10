@@ -1,25 +1,12 @@
-// add a leave blank for your own data, only MR can see other peoples database when I figure out subcommands
-
-/* import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from "discord.js";
-import mysql from "mysql";
-import { KOGBot } from "index.ts";
-import { SlashCommand } from "main.d.ts";  
-import config from "../../config"
-
-const connection = mysql.createConnection({
-    host: config.database.host,
-    port: config.database.port,
-    user: config.database.user,
-    password: config.database.password,
-    database: config.database.schema
-});
+import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from "discord.js";
+import { KOGBot } from "index.js";
 
 class GetDataCommand implements SlashCommand {
     name = "data";
     description = "Database command for KOG. ";
-    subcommands = []; Subcommandds (data change, data add, data check) 
+    subcommands = [];
     parameters = [];
-    dev = true; // dev for now 
+    dev = true; // dev for now
     kogBot: KOGBot;
 
     constructor(kogBot: KOGBot) {
@@ -78,5 +65,3 @@ class GetDataCommand implements SlashCommand {
 }
 
 export default GetDataCommand;
-
-*/

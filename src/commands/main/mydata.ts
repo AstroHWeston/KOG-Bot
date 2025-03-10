@@ -1,16 +1,5 @@
-/* import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from "discord.js";
-import mysql from "mysql";
-import { KOGBot } from "index.ts";
-import { SlashCommand } from "main.d.ts";  
-import config from "../../config"
-
-const connection = mysql.createConnection({
-    host: config.database.host,
-    port: config.database.port,
-    user: config.database.user,
-    password: config.database.password,
-    database: config.database.schema
-});
+import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from "discord.js";
+import { KOGBot } from "index.js";
 
 class GetDataCommand implements SlashCommand {
     name = "mydata";
@@ -28,17 +17,6 @@ class GetDataCommand implements SlashCommand {
         try {
             const user = interaction.user;
             const userId = interaction.user.id; // Needed for DB
-
-            connection.query('SELECT * FROM KOGDB WHERE userid = ?', [userId], async (err, results) => {
-                if (err) {
-                    console.error(err);
-                    const embedError = new EmbedBuilder()
-                        .setColor("#E73A3A")
-                        .setTitle("Database Error")
-                        .setDescription("An error occurred while trying to retrieve your data.");
-                    await interaction.reply({ embeds: [embedError] });
-                    return;
-                }
 
                 if (results.length > 0) {
                   
@@ -76,5 +54,3 @@ class GetDataCommand implements SlashCommand {
 }
 
 export default GetDataCommand;
-
-*/

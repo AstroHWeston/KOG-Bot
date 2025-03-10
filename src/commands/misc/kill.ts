@@ -1,5 +1,5 @@
-/* import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction, SlashCommand } from "discord.js";
-import { KOGBot } from "index.ts"; 
+import { EmbedBuilder, ChatInputCommandInteraction } from "discord.js";
+import { KOGBot } from "index.js"; 
 
 class KillCommand implements SlashCommand {
     name = 'kill';
@@ -18,7 +18,8 @@ class KillCommand implements SlashCommand {
          
             const user = interaction.options.getUser('user');
             if (!user) {
-                return interaction.reply("No user was mentioned. Please mention a user to kill.");
+                interaction.reply("No user was mentioned. Please mention a user to kill.");
+                return;
             }
 
             const embed = new EmbedBuilder()
@@ -42,5 +43,3 @@ class KillCommand implements SlashCommand {
 }
 
 export default KillCommand;
-
-*/
