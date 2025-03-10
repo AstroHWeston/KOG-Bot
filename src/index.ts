@@ -1,4 +1,4 @@
-import { Client, IntentsBitField, Message, REST } from "discord.js";
+import { Client, IntentsBitField, REST, SlashCommandBuilder, Routes, SlashCommandSubcommandBuilder } from "discord.js";
 import fs from 'fs';
 import knex, { Knex } from "knex";
 import toml from 'toml';
@@ -27,8 +27,11 @@ class DBot extends Client {
         this.REST.setToken(this.kogBot.environment.discord.client_token);
 
         if (!kogBot.ci_workflow) {
+            if (process.argv.includes('--deploy')) {
+                this.commands.deploy().then(() => console.log("Commands deployed."));
+            }
             this.gatewayEvents.listen().then(() => console.log("Listening to events."));
-            this.login(this.kogBot.environment.discord.client_token);
+            this.login(this.kogBot.environment.discord.client_token).then(() => console.log("Logged in, welcome!"));
         }
     }
 
@@ -71,6 +74,64 @@ class DBot extends Client {
                     this.on(event.name, event.code);
                 }
             }
+        }
+    }
+
+    commands = {
+        list: [] as any[],
+
+        parse: async () => {
+            const folderPath = join(__dirname, 'commands');
+            const commandCategories = fs.readdirSync(folderPath);
+            const commands = [];
+
+            for (const category of commandCategories) {
+                const commandsPath = join(folderPath, category);
+                const commandFiles = readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+
+                for (const file of commandFiles) {
+                    const filePath = join(commandsPath, file);
+                    const commandClass = (await import(`file://${filePath}`)).default;
+                    const command: SlashCommand = new commandClass(this.kogBot);
+                    const slashCommand = new SlashCommandBuilder();
+                    
+                    slashCommand.setName(command.name);
+                    slashCommand.setDescription(command.description);
+                    
+                    if (command.subcommands.length > 0) {
+                        for (const subcommand of command.subcommands) {
+                            const sub = new SlashCommandSubcommandBuilder()
+                                .setName(subcommand.name)
+                                .setDescription(subcommand.description);
+                            for (const parameter of command.parameters) {
+                                sub.options.push(parameter);
+                            }
+                            slashCommand.addSubcommand(sub);
+
+                        }
+                        
+                    }
+
+                    commands.push({
+                        builder: slashCommand,
+                        instance: command
+                    });
+                }
+            }
+            return commands;
+        },
+
+        deploy: async () => {
+            this.commands.list = await this.commands.parse();
+            if (process.argv.includes('--ci')) {
+                console.log("Not deploying commands because of CI environment. Commands successfully parsed!")
+                process.exit(0)
+            }
+            console.log(`Deploying ${this.commands.list.length} commands...`);
+            await this.REST.put(
+                Routes.applicationCommands(this.kogBot.environment.discord.client_id),
+                { body: this.commands.list.map(cmd => cmd.builder) }
+            );
         }
     }
 }

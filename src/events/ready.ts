@@ -14,6 +14,8 @@ export default class ReadyEvent implements GatewayEvent {
                 name: debug ? 'debug mode ⚠️' : 'with Knex.',
                 type: debug ? ActivityType.Competing : ActivityType.Playing
             }]
-        })
+        });
+
+        console.log(`Logged in as ${client.user?.tag}!`);
     }
 }
