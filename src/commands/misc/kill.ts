@@ -1,5 +1,5 @@
 import { EmbedBuilder, ChatInputCommandInteraction } from "discord.js";
-import { KOGBot } from "index.js"; 
+import { KOGBot } from "../../index.js"; 
 
 class KillCommand implements SlashCommand {
     name = 'kill';

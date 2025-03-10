@@ -1,18 +1,6 @@
-import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from 'discord.js';
-import mysql from 'mysql';
-import { KOGBot } from 'index.ts';
-import { SlashCommand } from 'main.d.ts';
-import config from '../../config';
-
-const allowedroleID = config.discord.mr_role; // Set this later when I have perms
-const logchannel = config.discord.log_channel; // log channel
-const connection = mysql.createConnection({
-    host: config.database.host,
-    port: config.database.port,
-    user: config.database.user,
-    password: config.database.password,
-    database: config.database.schema,
-});
+import { EmbedBuilder, ChatInputCommandInteraction, GuildMemberRoleManager } from 'discord.js';
+import { KOGBot } from '../../index.js';
+import knex, { Knex } from "knex";
 
 class LogEventCommand implements SlashCommand {
     name = 'log';
@@ -21,15 +9,29 @@ class LogEventCommand implements SlashCommand {
     parameters = [];
     dev = true;
     kogBot: KOGBot;
+    db: Knex;
 
     constructor(kogBot: KOGBot) {
         this.kogBot = kogBot;
-    }
+        this.db = knex({
+                   client: 'mysql',
+                   connection: {
+                       host: this.kogBot.environment.database.host,
+                       user: this.kogBot.environment.database.user,
+                       password: this.kogBot.environment.database.password,
+                       database: this.kogBot.environment.database.name
+                   }
+               });
+           }
 
     async execute(interaction: ChatInputCommandInteraction): Promise<void> {
+        const allowedroleID = this.kogBot.environment.discord.mr_role; // Set this later when I have perms
+        const logChannel = this.kogBot.environment.discord.logChannel; // log channel
+        const userId = interaction.user.id; // Needed for DB
+        const DB = await this.db('KOGDB').where({ userid: userId });
         try {
             // Check for required role
-            if (!interaction.member?.roles.cache.has(allowedroleID)) {
+            if (!(interaction.member?.roles instanceof GuildMemberRoleManager) || !interaction.member.roles.cache.has(allowedroleID)) {
                 const noperms = new EmbedBuilder()
                     .setColor('#E73A3A')
                     .setTitle('Error')
@@ -48,9 +50,14 @@ class LogEventCommand implements SlashCommand {
 
             await interaction.reply({ embeds: [logStart], ephemeral: true });
 
-            const filter = (message: any) => message.author.id === interaction.user.id && message.channel.id === interaction.channel.id;
-            const input = await interaction.channel.awaitMessages({ filter, max: 1, time: 60000, errors: ['time'] });
-            const response = input.first()?.content;
+            if (!interaction.channel) {
+                await interaction.reply('Channel not found.');
+                return;
+            }
+
+            const filter = (response: any) => response.user.id === interaction.user.id;
+            const collected = await interaction.channel?.awaitMessageComponent({ filter, time: 60000 }).catch(() => null);
+            const response = collected?.isMessageComponent() ? collected.message.content : null;
 
             const mentionRegexthing = /^<@\d+>(?:,\s?<@\d+>)*$/;
 
@@ -64,11 +71,15 @@ class LogEventCommand implements SlashCommand {
                 return;
             }
 
-            if (response instanceof Error && response.message === 'time') {
+            if (response && typeof response === 'object' && 'message' in response && (response as any).message === 'time') {
                 await interaction.reply(`<@${interaction.user.id}> you took too long to follow up, please try again.`);
                 return;
             }
 
+            if (!response) {
+                await interaction.followUp('No response received. Please try again.');
+                return;
+            }
             const mentions = response.split(',').map((id: string) => id.trim().replace('<@', '').replace('>', ''));
             const userIds: string[] = [];
 
@@ -82,71 +93,47 @@ class LogEventCommand implements SlashCommand {
                 return;
             }
 
-            
             const host = interaction.user.id;
             userIds.push(host);
 
-            // Log the event in the log channel
             const timestamp = Math.floor(Date.now() / 1000);
             const logEmbed = new EmbedBuilder()
                 .setColor('#9033FF')
                 .setTitle('Event log')
-                .setDescription(`A new event was logged.\n\nHost: <@${host}>\n\nTime: <t:${timestamp}:F>\n\nAttendees: ${mentions.map(id => `<@${id}>`).join(', ')}\n\nSquadron Rally: False`)
+                .setDescription(`A new event was logged.\n\nHost: <@${host}>\n\nTime: <t:${timestamp}:F>\n\nAttendees: ${mentions.map((id: string) => `<@${id}>`).join(', ')}\n\nSquadron Rally: False`)
                 .setTimestamp();
 
-            const logChannel = await interaction.client.channels.fetch(logchannel);
-            if (logChannel?.isText()) {
+            if (logChannel) {
                 await logChannel.send({ embeds: [logEmbed] });
             }
 
+            const db = knex({ client: 'mysql', connection: this.kogBot.environment.database });
+
             for (const userId of userIds) {
-                connection.query('SELECT * FROM KOGDB WHERE userId = ?', [userId], async (err, results) => {
-                    if (err) {
-                        console.error(err);
-                        await interaction.followUp('There was an error querying the database.');
-                        return;
-                    }
+                try {
+                    const results = await db('KOGDB').where({ userId });
 
                     if (results.length > 0) {
-                       
                         if (userId === host) {
-                            connection.query('UPDATE KOGDB SET eventsAttended = eventsAttended + 1, eventsHosted = eventsHosted + 1 WHERE userId = ?', [userId], async (updateErr) => {
-                                if (updateErr) {
-                                    console.error(updateErr);
-                                    await interaction.followUp('There was an error updating the database.');
-                                    return;
-                                }
+                            await db('KOGDB').where({ userId }).update({
+                                eventsAttended: db.raw('eventsAttended + 1'),
+                                eventsHosted: db.raw('eventsHosted + 1')
                             });
                         } else {
-                            connection.query('UPDATE KOGDB SET eventsAttended = eventsAttended + 1 WHERE userId = ?', [userId], async (updateErr) => {
-                                if (updateErr) {
-                                    console.error(updateErr);
-                                    await interaction.followUp('There was an error updating the database.');
-                                    return;
-                                }
+                            await db('KOGDB').where({ userId }).update({
+                                eventsAttended: db.raw('eventsAttended + 1')
                             });
                         }
                     } else {
-                        
                         if (userId === host) {
-                            connection.query('INSERT INTO KOGDB (userId, eventsAttended, eventsHosted) VALUES (?, 1, 1)', [userId], async (insertErr) => {
-                                if (insertErr) {
-                                    console.error(insertErr);
-                                    await interaction.followUp('There was an error updating the database.');
-                                    return;
-                                }
-                            });
+                            await db('KOGDB').insert({ userId, eventsAttended: 1, eventsHosted: 1 });
                         } else {
-                            connection.query('INSERT INTO KOGDB (userId, eventsAttended, eventsHosted) VALUES (?, 1, 0)', [userId], async (insertErr) => {
-                                if (insertErr) {
-                                    console.error(insertErr);
-                                    await interaction.followUp('There was an error updating the database.');
-                                    return;
-                                }
-                            });
+                            await db('KOGDB').insert({ userId, eventsAttended: 1, eventsHosted: 0 });
                         }
                     }
-                });
+                } catch (err) {
+                    console.error(err);
+                }
             }
 
             const dbEmbed = new EmbedBuilder()
