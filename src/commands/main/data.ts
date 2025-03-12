@@ -8,21 +8,10 @@ class GetDataCommand implements SlashCommand {
     parameters = [];
     dev = true; 
     kogBot: KOGBot;
-    db: Knex;
 
     constructor(kogBot: KOGBot) {
         this.kogBot = kogBot;
-
-        // Initialize knex with database configuration from this.environment.database
-        this.db = knex({
-            client: 'mysql',
-            connection: {
-                host: this.kogBot.environment.database.host,
-                user: this.kogBot.environment.database.user,
-                password: this.kogBot.environment.database.password,
-                database: this.kogBot.environment.database.name
-            }
-        });
+    
     }
 
     async execute(interaction: ChatInputCommandInteraction): Promise<void> {
@@ -30,7 +19,7 @@ class GetDataCommand implements SlashCommand {
             const user = interaction.user;
             const userId = interaction.user.id; // Needed for DB
 
-            const results = await this.db('KOGDB').where({ userid: userId });
+            //const results = await this.db('KOGDB').where({ userid: userId });
 
             if (results.length > 0) {
                 const { eventsAttended, eventsHosted } = results[0];

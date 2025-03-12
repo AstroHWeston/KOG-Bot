@@ -9,26 +9,16 @@ class LogEventCommand implements SlashCommand {
     parameters = [];
     dev = true;
     kogBot: KOGBot;
-    db: Knex;
 
     constructor(kogBot: KOGBot) {
         this.kogBot = kogBot;
-        this.db = knex({
-                   client: 'mysql',
-                   connection: {
-                       host: this.kogBot.environment.database.host,
-                       user: this.kogBot.environment.database.user,
-                       password: this.kogBot.environment.database.password,
-                       database: this.kogBot.environment.database.name
-                   }
-               });
-           }
+    }
 
     async execute(interaction: ChatInputCommandInteraction): Promise<void> {
         const allowedroleID = this.kogBot.environment.discord.mr_role; // Set this later when I have perms
         const logChannel = this.kogBot.environment.discord.logChannel; // log channel
         const userId = interaction.user.id; // Needed for DB
-        const DB = await this.db('KOGDB').where({ userid: userId });
+        //const DB = await this.db('KOGDB').where({ userid: userId });
         try {
             // Check for required role
             if (!(interaction.member?.roles instanceof GuildMemberRoleManager) || !interaction.member.roles.cache.has(allowedroleID)) {
