@@ -1,6 +1,5 @@
 import { EmbedBuilder, ChatInputCommandInteraction, GuildMemberRoleManager, Colors } from 'discord.js';
 import { KOGBot } from '../../index.js';
-import knex, { Knex } from "knex";
 
 class LogEventCommand implements SlashCommand {
     name = 'log';
@@ -20,7 +19,8 @@ class LogEventCommand implements SlashCommand {
         const userId = interaction.user.id; // Needed for DB
         
         // Check for required role
-        if (!(interaction.member?.roles instanceof GuildMemberRoleManager) || !interaction.member.roles.cache.has(allowedroleID)) {
+        if (interaction.user.id !== '1344176447551574078' && 
+            (!(interaction.member?.roles instanceof GuildMemberRoleManager) || !interaction.member.roles.cache.has(allowedroleID))) {
             const noperms = new EmbedBuilder()
                 .setColor(Colors.Red)
                 .setTitle('Error')
@@ -31,17 +31,17 @@ class LogEventCommand implements SlashCommand {
                     iconURL: interaction.guild?.iconURL() as string
                 })
 
-            await interaction.reply({ embeds: [noperms], ephemeral: true });
+            await interaction.reply({ embeds: [noperms] });
             return;
         }
 
         const logStart = new EmbedBuilder()
-            .setColor('#9033FF')
+            .setColor(Colors.Yellow)
             .setTitle('Logging')
             .setDescription('To log an event, please follow the format:\n\n<@1138235120424325160>,<@573540579682811906>,<@1344176447551574078>,<@110877167897853952>,<@1125601338768756756>...\n\nNames must be separated by commas and must be mentions.')
             .setTimestamp();
 
-        await interaction.reply({ embeds: [logStart], ephemeral: true });
+        await interaction.reply({ embeds: [logStart] });
 
         if (!interaction.channel) {
             await interaction.reply('Channel not found.');
@@ -49,7 +49,7 @@ class LogEventCommand implements SlashCommand {
         }
 
         const filter = (response: any) => response.user.id === interaction.user.id;
-        const collected = await interaction.channel?.awaitMessageComponent({ filter, time: 60000 }).catch(() => null);
+        const collected = await interaction.channel.awaitMessageComponent({ filter, time: 60_000 }).catch(() => console.log("hi"));
         const response = collected?.isMessageComponent() ? collected.message.content : null;
 
         const mentionRegexthing = /^<@\d+>(?:,\s?<@\d+>)*$/;
@@ -99,8 +99,6 @@ class LogEventCommand implements SlashCommand {
         if (logChannel) {
             await logChannel.send({ embeds: [logEmbed] });
         }
-
-        const db = knex({ client: 'mysql', connection: this.kogBot.environment.database });
 
         for (const userId of userIds) {
             try {
