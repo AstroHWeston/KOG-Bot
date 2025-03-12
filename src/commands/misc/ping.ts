@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction } from "discord.js";
+import { ChatInputCommandInteraction, EmbedBuilder, Colors } from "discord.js";
 import { KOGBot } from "../../index.js"; // Adjust the path if necessary
 
 class PingCommand implements SlashCommand {
@@ -14,16 +14,24 @@ class PingCommand implements SlashCommand {
     }
 
     async execute(interaction: ChatInputCommandInteraction): Promise<void> {
-        try {
-            const sent = await interaction.reply({ content: "Ping!", fetchReply: true });
-            const timeDiff = (sent.createdTimestamp - interaction.createdTimestamp);
-            
-
-            await interaction.editReply(`Pong! Latency is ${timeDiff}ms.`);
-        } catch (error) {
-            console.error(error);
-            await interaction.reply("An error occurred while trying to check the latency.");
-        }
+        const ping = Math.floor(interaction.client.ws.ping);
+        const message = await interaction.reply({
+            embeds: [
+                new EmbedBuilder()
+                    .setTitle("Pong!")
+                    .setDescription(`🏓**Client latency** \`${ping}\` ms\n🌐 **Round-trip** \`Calculating...\``)
+                    .setColor(Colors.Blue)
+            ]
+        });
+        const round = Math.floor(message.interaction.createdTimestamp - interaction.createdTimestamp);
+        await interaction.editReply({
+            embeds: [
+                new EmbedBuilder()
+                    .setTitle("Pong!")
+                    .setDescription(`🏓**Client latency**: \`${ping}\` ms\n🌐 **Round-trip**: \`${round}\` ms`)
+                    .setColor(Colors.Green)
+            ]
+        });
     }
 }
 
