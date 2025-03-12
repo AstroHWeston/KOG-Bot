@@ -12,3 +12,6 @@ schema = ""
 
 [sentry]
 dsn = ""
+
+[roles]
+mr_role = ""
