@@ -11,6 +11,7 @@ export default class ReadyEvent implements GatewayEvent {
             const params = interaction.options;
             
             const commandObj = kogBot.discord_client.commands.list.find(cmd => cmd.instance.name === receivedCommand);
+            console.log(commandObj);
 
             if (!commandObj) {
                 interaction.reply("Command not found bro");

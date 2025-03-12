@@ -27,9 +27,7 @@ class DBot extends Client {
         this.REST.setToken(this.kogBot.environment.discord.client_token);
 
         if (!kogBot.ci_workflow) {
-            if (process.argv.includes('--deploy')) {
-                this.commands.deploy().then(() => console.log("Commands deployed."));
-            }
+            this.commands.deploy().then(() => console.log("Commands deployed."));
             this.gatewayEvents.listen().then(() => console.log("Listening to events."));
             this.login(this.kogBot.environment.discord.client_token).then(() => console.log("Logged in, welcome!"));
         }
