@@ -1,27 +1,21 @@
-import { EmbedBuilder, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { EmbedBuilder, ChatInputCommandInteraction, SlashCommandBuilder, SlashCommandUserOption } from "discord.js";
 import { KOGBot } from "../../index.js";
 
 class KillCommand implements SlashCommand {
     name = 'kill';
     description = 'Kill a user (in messages).';
     subcommands = [];
-    parameters = [];
+    parameters = [
+        new SlashCommandUserOption()
+            .setName('user')
+            .setDescription('The user to kill')
+            .setRequired(true)
+    ];
     dev = true;
     kogBot: KOGBot;
 
     constructor(kogBot: KOGBot) {
         this.kogBot = kogBot;
-    }
-
-    getCommandData() {
-        return new SlashCommandBuilder()
-            .setName(this.name)
-            .setDescription(this.description)
-            .addUserOption(option => 
-                option.setName('user')
-                    .setDescription('The user to kill')
-                    .setRequired(true)
-            );
     }
 
     async execute(interaction: ChatInputCommandInteraction): Promise<void> {

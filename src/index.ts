@@ -95,6 +95,10 @@ class DBot extends Client {
                     
                     slashCommand.setName(command.name);
                     slashCommand.setDescription(command.description);
+
+                    for (const parameter of command.parameters) {
+                        slashCommand.options.push(parameter);
+                    }
                     
                     if (command.subcommands.length > 0) {
                         for (const subcommand of command.subcommands) {
@@ -105,7 +109,6 @@ class DBot extends Client {
                                 sub.options.push(parameter);
                             }
                             slashCommand.addSubcommand(sub);
-
                         }
                         
                     }
