@@ -18,8 +18,8 @@ class GetDataCommand implements SlashCommand {
         try {
             const user = interaction.user;
             const userId = interaction.user.id; // Needed for DB
-
-            //const results = await this.db('KOGDB').where({ userid: userId });
+            const db = knex({ client: 'mysql', connection: this.kogBot.environment.database });
+            const results = await db('kog').where({ userid: userId });
 
             if (results.length > 0) {
                 const { eventsAttended, eventsHosted } = results[0];
