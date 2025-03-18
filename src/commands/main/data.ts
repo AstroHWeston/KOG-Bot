@@ -2,10 +2,9 @@ import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from "
 import { KOGBot } from "index.js";
 import knex, { Knex } from "knex";
 class GetDataCommand implements SlashCommand {
-    name = "data";
-    description = "Database command for KOG.";
-    subcommands = [];
-    parameters = [];
+    data = new SlashCommandBuilder()
+        .setName('data')
+        .setDescription('Data stuff.');
     dev = true; 
     kogBot: KOGBot;
 

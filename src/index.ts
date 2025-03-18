@@ -1,4 +1,4 @@
-import { Client, IntentsBitField, REST, SlashCommandBuilder, Routes, SlashCommandSubcommandBuilder } from "discord.js";
+import { Client, IntentsBitField, REST, SlashCommandBuilder, Routes, SlashCommandSubcommandBuilder, RESTPostAPIApplicationCommandsJSONBody } from "discord.js";
 import fs from 'fs';
 import knex, { Knex } from "knex";
 import toml from 'toml';
@@ -76,7 +76,7 @@ class DBot extends Client {
     }
 
     commands = {
-        list: [] as any[],
+        list: [] as RESTPostAPIApplicationCommandsJSONBody[],
 
         parse: async () => {
             const folderPath = join(__dirname, 'commands');
@@ -85,38 +85,14 @@ class DBot extends Client {
 
             for (const category of commandCategories) {
                 const commandsPath = join(folderPath, category);
-                const commandFiles = readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+                const commandFiles = readdirSync(commandsPath);
 
                 for (const file of commandFiles) {
                     const filePath = join(commandsPath, file);
                     const commandClass = (await import(`file://${filePath}`)).default;
                     const command: SlashCommand = new commandClass(this.kogBot);
-                    const slashCommand = new SlashCommandBuilder();
                     
-                    slashCommand.setName(command.name);
-                    slashCommand.setDescription(command.description);
-
-                    for (const parameter of command.parameters) {
-                        slashCommand.options.push(parameter);
-                    }
-                    
-                    if (command.subcommands.length > 0) {
-                        for (const subcommand of command.subcommands) {
-                            const sub = new SlashCommandSubcommandBuilder()
-                                .setName(subcommand.name)
-                                .setDescription(subcommand.description);
-                            for (const parameter of command.parameters) {
-                                sub.options.push(parameter);
-                            }
-                            slashCommand.addSubcommand(sub);
-                        }
-                        
-                    }
-
-                    commands.push({
-                        builder: slashCommand,
-                        instance: command
-                    });
+                    commands.push(command.data.toJSON());
                 }
             }
             return commands;
@@ -131,7 +107,7 @@ class DBot extends Client {
             console.log(`Deploying ${this.commands.list.length} commands...`);
             await this.REST.put(
                 Routes.applicationCommands(this.kogBot.environment.discord.client_id),
-                { body: this.commands.list.map(cmd => cmd.builder) }
+                { body: [] }
             );
         }
     }

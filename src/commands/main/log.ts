@@ -1,11 +1,10 @@
-import { EmbedBuilder, ChatInputCommandInteraction, GuildMemberRoleManager, Colors } from 'discord.js';
+import { EmbedBuilder, ChatInputCommandInteraction, GuildMemberRoleManager, Colors, SlashCommandBuilder } from 'discord.js';
 import { KOGBot } from '../../index.js';
 
 class LogEventCommand implements SlashCommand {
-    name = 'log';
-    description = 'Logs official events for KOG.';
-    subcommands = [];
-    parameters = [];
+    data = new SlashCommandBuilder()
+        .setName('logevent')
+        .setDescription('Log an event.')
     dev = true;
     kogBot: KOGBot;
 

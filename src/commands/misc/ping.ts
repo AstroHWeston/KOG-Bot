@@ -1,11 +1,10 @@
-import { ChatInputCommandInteraction, EmbedBuilder, Colors } from "discord.js";
+import { ChatInputCommandInteraction, EmbedBuilder, Colors, SlashCommandBuilder } from "discord.js";
 import { KOGBot } from "../../index.js"; // Adjust the path if necessary
 
 class PingCommand implements SlashCommand {
-    name = "ping";
-    description = "Checks the bot's latency.";
-    subcommands = [];
-    parameters = [];
+    data = new SlashCommandBuilder()
+        .setName('ping')
+        .setDescription('Check the bot\'s latency.');
     dev = true; 
     kogBot: KOGBot;
 

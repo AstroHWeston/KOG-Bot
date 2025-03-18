@@ -1,4 +1,4 @@
-import { ApplicationCommandOptionBase, ChatInputCommandInteraction } from "discord.js";
+import { ApplicationCommandOptionBase, ChatInputCommandInteraction, SlashCommandBuilder, SlashCommandSubcommandBuilder } from "discord.js";
 import { KOGBot } from "index.ts";
 
 global {
@@ -15,10 +15,7 @@ global {
     }
     
     declare interface SlashCommand {
-        name: string;
-        description: string;
-        subcommands: Array<SlashCommand>;
-        parameters: Array<ApplicationCommandOptionBase>;
+        data: SlashCommandBuilder;
         dev?: boolean;
         kogBot: KOGBot;
         

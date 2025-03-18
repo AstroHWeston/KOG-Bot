@@ -1,16 +1,10 @@
-import { EmbedBuilder, ChatInputCommandInteraction, SlashCommandBuilder, SlashCommandUserOption } from "discord.js";
+import { EmbedBuilder, ChatInputCommandInteraction, SlashCommandBuilder, SlashCommandUserOption, SlashCommandSubcommandBuilder } from "discord.js";
 import { KOGBot } from "../../index.js";
 
 class KillCommand implements SlashCommand {
-    name = 'kill';
-    description = 'Kill a user (in messages).';
-    subcommands = [];
-    parameters = [
-        new SlashCommandUserOption()
-            .setName('user')
-            .setDescription('The user to kill')
-            .setRequired(true)
-    ];
+    data = new SlashCommandBuilder()
+    .setName('kill')
+    .setDescription('Kill a user.')
     dev = true;
     kogBot: KOGBot;
 
