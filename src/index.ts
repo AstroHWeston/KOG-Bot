@@ -1,4 +1,4 @@
-import { Client, IntentsBitField, REST, SlashCommandBuilder, Routes, SlashCommandSubcommandBuilder, RESTPostAPIApplicationCommandsJSONBody } from "discord.js";
+import { Client, IntentsBitField, REST, SlashCommandBuilder, Routes, SlashCommandSubcommandBuilder, RESTPostAPIApplicationCommandsJSONBody, Collection } from "discord.js";
 import fs from 'fs';
 import knex, { Knex } from "knex";
 import toml from 'toml';
@@ -76,12 +76,12 @@ class DBot extends Client {
     }
 
     commands = {
-        list: [] as RESTPostAPIApplicationCommandsJSONBody[],
+        list: new Collection<any, any>(),
 
         parse: async () => {
             const folderPath = join(__dirname, 'commands');
             const commandCategories = fs.readdirSync(folderPath);
-            const commands = [];
+            const commands = new Collection<string, SlashCommand>();
 
             for (const category of commandCategories) {
                 const commandsPath = join(folderPath, category);
@@ -92,22 +92,29 @@ class DBot extends Client {
                     const commandClass = (await import(`file://${filePath}`)).default;
                     const command: SlashCommand = new commandClass(this.kogBot);
                     
-                    commands.push(command.data.toJSON());
+                    commands.set(command.data.name, command);
                 }
             }
             return commands;
         },
 
         deploy: async () => {
-            this.commands.list = await this.commands.parse();
+            const parsed = await this.commands.parse();
+            this.commands.list = parsed;
+            const JSONCommands: RESTPostAPIApplicationCommandsJSONBody[] = [];
+
+            this.commands.list.forEach((command) => {
+                JSONCommands.push(command.data.toJSON());  
+            });
+        
             if (process.argv.includes('--ci')) {
                 console.log("Not deploying commands because of CI environment. Commands successfully parsed!")
                 process.exit(0)
             }
-            console.log(`Deploying ${this.commands.list.length} commands...`);
+            console.log(`Deploying ${this.commands.list.size} commands...`);
             await this.REST.put(
                 Routes.applicationCommands(this.kogBot.environment.discord.client_id),
-                { body: [] }
+                { body: JSONCommands }
             );
         }
     }

@@ -5,34 +5,41 @@ export default class ReadyEvent implements GatewayEvent {
     name: string = 'interactionCreate';
     once: boolean = false;
 
-    async code (kogBot: KOGBot, interaction: Interaction) {
+    async code (kogBot: KOGBot, interaction: Interaction): Promise<void> {
         if (interaction.isChatInputCommand()) {
-            const receivedCommand = interaction.commandName;
-            const params = interaction.options;
-            
-            const commandObj = kogBot.discord_client.commands.list.find(cmd => cmd.instance.name === receivedCommand);
-            if (!commandObj) {
-                interaction.reply("Command not found bro");
+            let command: any;
+
+            console.log(kogBot.discord_client.commands.list);
+
+            command = kogBot.discord_client.commands.list.get(interaction.commandName);
+
+            if (!command) {
+                interaction.reply({
+                    embeds:
+                        [
+                            new EmbedBuilder()
+                                .setTitle("Command Execution Error")
+                                .setDescription(`No command was found matching name \`${interaction.commandName}\``)
+                                .setColor(Colors.Red)
+                                .setFooter({
+                                    text: `${interaction.guild?.name}`,
+                                    iconURL: interaction.guild?.iconURL() as string
+                                })
+                                .setTimestamp()
+                        ]
+                });
                 return;
             }
 
             try {
-                await commandObj.instance.execute(interaction);
+                await command.execute(interaction);
             } catch (err) {
-                const replied = interaction.replied || interaction.deferred;
-                const replyData = {
-                    embeds: [
-                        new EmbedBuilder()
-                            .setTitle("Command Execution Error")
-                            .setDescription(`${err}`)
-                            .setColor(Colors.Red)
-                            .setFooter({
-                                text: `${interaction.guild?.name}`,
-                                iconURL: interaction.guild?.iconURL() as string
-                            })
-                            .setTimestamp()
-                    ]
-                };
+                console.log(err);
+                if (interaction.replied || interaction.deferred) {
+                    await interaction.followUp({ content: 'fuck' });
+                } else {
+                    await interaction.reply({ content: 'shit' });
+                }
             }
         }
     }
