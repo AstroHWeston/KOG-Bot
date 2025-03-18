@@ -1,6 +1,6 @@
 {
   "name": "kog-bot-tomfoolery",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Discord utility for the Kleiner Oil Group.",
   "main": "build/src/index.js",
   "type": "module",
@@ -21,8 +21,8 @@
     "knex": "^3.1.0"
   },
   "devDependencies": {
-    "@sentry/node": "^9.5.0",
-    "@sentry/profiling-node": "^9.5.0",
+    "@sentry/node": "^9.6.0",
+    "@sentry/profiling-node": "^9.6.0",
     "mysql2": "^3.13.0",
     "nodemon": "^3.1.9",
     "toml": "^3.0.0"
