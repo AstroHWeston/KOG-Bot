@@ -1,11 +1,10 @@
-import { EmbedBuilder, ChatInputCommandInteraction } from "discord.js";
+import { EmbedBuilder, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { KOGBot } from "../../index.js";
 
 class InfoCommand implements SlashCommand {
-    name = 'info';
-    description = 'General information on the bot.';
-    subcommands = [];
-    parameters = []
+    data: SlashCommandBuilder = new SlashCommandBuilder()
+        .setName("info")
+        .setDescription("Displays information about KOG Bot.");
     dev = true;
     kogBot: KOGBot;
 
