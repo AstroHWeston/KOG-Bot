@@ -18,7 +18,7 @@ class LogEventCommand implements SlashCommand {
         .setName('logevent')
         .setDescription('Log an event.');
 
-    dev = false; // reverting after kapatz testing
+    dev = false; // reverting after kapatz testing g
     kogBot: KOGBot;
 
     constructor(kogBot: KOGBot) {
