@@ -1,4 +1,4 @@
-import { Client, IntentsBitField, REST, SlashCommandBuilder, Routes, SlashCommandSubcommandBuilder, RESTPostAPIApplicationCommandsJSONBody, Collection } from "discord.js";
+import { Client, IntentsBitField, REST, Routes, RESTPostAPIApplicationCommandsJSONBody, Collection } from "discord.js";
 import fs from 'fs';
 import knex, { Knex } from "knex";
 import toml from 'toml';
@@ -111,11 +111,13 @@ class DBot extends Client {
                 console.log("Not deploying commands because of CI environment. Commands successfully parsed!")
                 process.exit(0)
             }
-            console.log(`Deploying ${this.commands.list.size} commands...`);
-            await this.REST.put(
-                Routes.applicationCommands(this.kogBot.environment.discord.client_id),
-                { body: JSONCommands }
-            );
+            if (process.argv.includes('--deploy')) {
+                console.log(`Publishing ${this.commands.list.size} commands to the Discord API...`);
+                await this.REST.put(
+                    Routes.applicationCommands(this.kogBot.environment.discord.client_id),
+                    { body: JSONCommands }
+                );
+            }
         }
     }
 }

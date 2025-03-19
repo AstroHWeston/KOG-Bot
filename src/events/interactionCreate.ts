@@ -7,11 +7,39 @@ export default class ReadyEvent implements GatewayEvent {
 
     async code (kogBot: KOGBot, interaction: Interaction): Promise<void> {
         if (interaction.isChatInputCommand()) {
-            let command: any;
-
-            console.log(kogBot.discord_client.commands.list);
-
-            command = kogBot.discord_client.commands.list.get(interaction.commandName);
+            if (!interaction.guild) {
+                if (interaction.replied || interaction.deferred) {
+                    await interaction.followUp({
+                        embeds: [
+                            new EmbedBuilder()
+                                .setTitle("Command Execution Error")
+                                .setDescription("Commands can only be executed inside guilds.")
+                                .setColor(Colors.Red)
+                                .setFooter({
+                                    text: `${interaction.user.username}`,
+                                    iconURL: interaction.user.avatarURL() as string
+                                })
+                                .setTimestamp()
+                        ]
+                    })
+                } else {
+                    await interaction.reply({
+                        embeds: [
+                            new EmbedBuilder()
+                            .setTitle("Command Execution Error")
+                            .setDescription("Commands can only be executed inside guilds.")
+                            .setColor(Colors.Red)
+                            .setFooter({
+                                text: `${interaction.user.username}`,
+                                iconURL: interaction.user.avatarURL() as string
+                            })
+                            .setTimestamp()
+                        ]
+                    })
+                }
+                return;
+            }
+            let command: SlashCommand = kogBot.discord_client.commands.list.get(interaction.commandName);
 
             if (!command) {
                 interaction.reply({
@@ -27,6 +55,21 @@ export default class ReadyEvent implements GatewayEvent {
                                 })
                                 .setTimestamp()
                         ]
+                });
+                return;
+            } else if (command.dev && !kogBot.environment.discord.dev_ids.includes(interaction.user.id)) {
+                interaction.reply({
+                    embeds: [
+                        new EmbedBuilder()
+                            .setTitle("Command Execution Error")
+                            .setDescription(`Command \`${interaction.commandName}\` is a developer only command and cannot be executed by non-developers.`)
+                            .setColor(Colors.Red)
+                            .setFooter({
+                                text: `${interaction.guild?.name}`,
+                                iconURL: interaction.guild?.iconURL() as string
+                            })
+                            .setTimestamp()
+                    ]
                 });
                 return;
             }

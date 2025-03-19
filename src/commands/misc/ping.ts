@@ -5,7 +5,6 @@ class PingCommand implements SlashCommand {
     data = new SlashCommandBuilder()
         .setName('ping')
         .setDescription('Check the bot\'s latency.');
-    dev = true; 
     kogBot: KOGBot;
 
     constructor(kogBot: KOGBot) {

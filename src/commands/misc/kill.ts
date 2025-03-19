@@ -1,10 +1,33 @@
-import { EmbedBuilder, ChatInputCommandInteraction, SlashCommandBuilder, SlashCommandUserOption, SlashCommandSubcommandBuilder } from "discord.js";
+import { EmbedBuilder, ChatInputCommandInteraction, SlashCommandBuilder, SlashCommandUserOption, SlashCommandSubcommandBuilder, SlashCommandRoleOption } from "discord.js";
 import { KOGBot } from "../../index.js";
 
 class KillCommand implements SlashCommand {
     data = new SlashCommandBuilder()
-    .setName('kill')
-    .setDescription('Kill a user.')
+        .setName('kill')
+        .setDescription('Kills an entity')
+        .addSubcommand((subcommand: SlashCommandSubcommandBuilder) =>
+            subcommand
+                .setName('user')
+                .setDescription('The user to kill.')
+                .addUserOption((option: SlashCommandUserOption) =>
+                    option
+                        .setName('user')
+                        .setDescription('The user to kill.')
+                        .setRequired(true)
+                )
+            )
+    .addSubcommand((subcommand: SlashCommandSubcommandBuilder) =>
+        subcommand
+            .setName('role')
+            .setDescription('The role to kill.')
+            .addRoleOption((option: SlashCommandRoleOption) =>
+                option
+                    .setName('role')
+                    .setDescription('The role to kill.')
+                    .setRequired(true)
+            )
+        )
+
     dev = true;
     kogBot: KOGBot;
 
@@ -13,30 +36,8 @@ class KillCommand implements SlashCommand {
     }
 
     async execute(interaction: ChatInputCommandInteraction): Promise<void> {
-        try {
-            const user = interaction.options.getUser('user');
-            if (!user) {
-                interaction.reply("No user was mentioned. Please mention a user to kill.");
-                return;
-            }
-
-            const embed = new EmbedBuilder()
-                .setColor("#9033FF")
-                .setTitle('Killed')
-                .setDescription(`I have killed the stinky of <@${user.id}>`);
-
-            await interaction.reply({ embeds: [embed] });
-        } catch (error) {
-            console.error("Error in executing kill command:", error);
-
-            const errorEmbed = new EmbedBuilder()
-                .setColor("#E73A3A")
-                .setTitle("Error")
-                .setDescription("An error occurred while executing the kill command.")
-                .setTimestamp();
-
-            await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
-        }
+        const subCommand = interaction.options.getSubcommand();
+        console.log(subCommand);
     }
 }
 
