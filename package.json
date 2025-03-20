@@ -24,6 +24,7 @@
   "devDependencies": {
     "@sentry/node": "^9.7.0",
     "@sentry/profiling-node": "^9.7.0",
+    "mysql2": "^3.14.0",
     "nodemon": "^3.1.9",
     "toml": "^3.0.0"
   }
