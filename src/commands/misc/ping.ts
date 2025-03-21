@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, EmbedBuilder, Colors, SlashCommandBuilder } from "discord.js";
-import { KOGBot } from "../../index.js"; // Adjust the path if necessary
+import { KOGBot } from "../../index.js";
 
 class PingCommand implements SlashCommand {
     data = new SlashCommandBuilder()
@@ -13,21 +13,12 @@ class PingCommand implements SlashCommand {
 
     async execute(interaction: ChatInputCommandInteraction): Promise<void> {
         const ping = Math.floor(interaction.client.ws.ping);
-        const message = await interaction.reply({
+        await interaction.reply({
             embeds: [
                 new EmbedBuilder()
                     .setTitle("Pong!")
-                    .setDescription(`🏓**Client latency** \`${ping}\` ms\n🌐 **Round-trip** \`Calculating...\``)
+                    .setDescription(`🏓**Client latency** \`${ping}\` ms.`)
                     .setColor(Colors.Blue)
-            ]
-        });
-        const round = Math.floor(message.interaction.createdTimestamp - interaction.createdTimestamp);
-        await interaction.editReply({
-            embeds: [
-                new EmbedBuilder()
-                    .setTitle("Pong!")
-                    .setDescription(`🏓**Client latency**: \`${ping}\` ms\n🌐 **Round-trip**: \`${round}\` ms`)
-                    .setColor(Colors.Green)
             ]
         });
     }
