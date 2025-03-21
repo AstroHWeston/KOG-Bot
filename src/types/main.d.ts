@@ -17,6 +17,7 @@ global {
     declare interface SlashCommand {
         data: SlashCommandBuilder | SlashCommandSubcommandsOnlyBuilder;
         dev?: boolean;
+        mr?: boolean = false;
         kogBot: KOGBot;
         
         execute (interaction: ChatInputCommandInteraction): Promise<void>;
