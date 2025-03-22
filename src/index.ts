@@ -154,6 +154,10 @@ class KOGBot_Client {
                 user: this.environment.database.user,
                 password: this.environment.database.password,
                 database: this.environment.database.schema
+            },
+            pool: {
+                min: 1,
+                max: 10
             }
         });
 
