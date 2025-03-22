@@ -1,6 +1,10 @@
 [discord]
 client_id = ""
 client_token = ""
+
+[discord.ids]
+log_channel_id = ""
+mr_role_id = ""
 dev_ids = ["1344176447551574078", "1138235120424325160"] # Async, Sheep
 
 [database]
