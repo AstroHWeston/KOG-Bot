@@ -1,6 +1,6 @@
 import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from "discord.js";
 import { KOGBot } from "index.js";
-import knex, { Knex } from "knex";
+
 class GetDataCommand implements SlashCommand {
     data = new SlashCommandBuilder()
         .setName('data')
@@ -16,9 +16,9 @@ class GetDataCommand implements SlashCommand {
     async execute(interaction: ChatInputCommandInteraction): Promise<void> {
         try {
             const user = interaction.user;
-            const userId = interaction.user.id; // Needed for DB
-            const db = knex({ client: 'mysql', connection: this.kogBot.environment.database });
-            const results = await db('kog').where({ userid: userId });
+            const userId = interaction.user.id; 
+            const db = this.kogBot.database('users');
+            const results = await db.where({ userId }).select();
 
             if (results.length > 0) {
                 const { eventsAttended, eventsHosted } = results[0];
