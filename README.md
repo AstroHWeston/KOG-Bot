@@ -20,3 +20,5 @@ Both are helping each other.
 
 Thank you for AsteroidPeak1 for approving this project.
 
+> [!WARNING]
+> This project has been deprecated with my departure from Quantum Science.
