@@ -1,3 +1,5 @@
+> [!WARNING]
+> This project has been deprecated with my departure from Quantum Science.
 # KOG Bot 
 
 ## Description
@@ -15,10 +17,8 @@ This project is licensed under the terms of the "LICENSE" file in the repository
 
 Asynchronite: Coding Handlers and backend of the general bot.
 Sheepboi546: Commands.
+Credits to Guardsman V1 for the inspiration for this codebase.
 
 Both are helping each other.
 
 Thank you for AsteroidPeak1 for approving this project.
-
-> [!WARNING]
-> This project has been deprecated with my departure from Quantum Science.
